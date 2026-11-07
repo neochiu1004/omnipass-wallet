@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=overlays-content">
+  <title>歐米票夾 OmniTrunk — 以 OmniPass 為底、TaskTrunk 為靈魂</title>
+
+  <meta name="description" content="歐米票夾 OmniTrunk：以 OmniPass 深海靛藍視覺與結帳連刷/加密備份為底，融合 TaskTrunk 智慧票券管理、85度C 自動範本與三模式核銷靈魂的本地優先 PWA。">
+  <meta name="keywords" content="OmniPass, TaskTrunk, 歐米票夾, 票券管理, PWA, 條碼連刷, AES-GCM 加密備份">
+  <meta name="author" content="OmniTrunk App">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="歐米票夾">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0b1020">
+
+  <link rel="apple-touch-icon" sizes="192x192" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/svg+xml" href="/qingsong-logo.svg">
+  <link rel="shortcut icon" href="/qingsong-logo.svg">
+
+  <link rel="stylesheet" href="/src/css/main.css">
+</head>
+<body class="font-display bg-wabi-bg text-wabi-text-primary">
+  <!-- OmniPass In-App Browser (LINE / FB / IG / Threads / WeChat) Detector Banner -->
+  <div id="inAppBrowserBanner" class="in-app-browser-banner hidden fixed top-0 left-0 right-0 z-50 px-4 py-2.5 shadow-md">
+    <div class="max-w-xl mx-auto flex items-center justify-between gap-3">
+      <div class="text-xs leading-snug">
+        <strong class="font-extrabold">偵測到 <span id="inAppBrowserName">App</span> 內建瀏覽器：</strong>
+        <span>內建瀏覽器可能限制相機掃碼或清除本機票券資料，建議改用 Safari / Chrome 開啟。</span>
+      </div>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button id="inAppCopyUrlBtn" type="button" class="px-2.5 py-1 rounded-lg bg-amber-700 text-white text-xs font-bold">複製網址</button>
+        <button id="inAppDismissBtn" type="button" class="px-2 py-1 rounded-lg border border-amber-700/40 text-amber-900 text-xs font-semibold">略過</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="app-container" class="relative min-h-screen w-full md:pl-64"></div>
+
+  <nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 bg-wabi-surface/95 backdrop-blur-md border-t border-wabi-border h-20 z-40 flex justify-around items-center md:top-0 md:w-64 md:h-screen md:flex-col md:justify-start md:border-t-0 md:border-r md:pt-8 md:items-stretch md:overflow-y-auto">
+    <div class="hidden md:flex items-center justify-center mb-8 px-4">
+      <img src="/qingsong-logo.svg" alt="歐米票夾" class="w-8 h-8 mr-2 rounded-xl shadow-sm">
+      <div>
+        <h1 class="text-lg font-extrabold text-wabi-primary leading-tight">歐米票夾</h1>
+        <p class="text-[10px] text-white/75">OmniPass × TaskTrunk</p>
+      </div>
+    </div>
+
+    <a href="#active" data-page="active" class="nav-item flex flex-col items-center justify-center text-wabi-text-secondary w-full h-full md:flex-row md:justify-start md:items-center md:h-auto md:py-3.5 md:px-8 hover:bg-black/5">
+      <i class="fa-solid fa-wallet text-lg md:w-6 md:text-center"></i>
+      <span class="text-[11px] mt-1 md:mt-0 md:ml-4 md:text-base font-semibold">卡包</span>
+    </a>
+
+    <a href="#checkout" data-page="checkout" class="nav-item flex flex-col items-center justify-center text-wabi-text-secondary w-full h-full md:flex-row md:justify-start md:items-center md:h-auto md:py-3.5 md:px-8 hover:bg-black/5">
+      <i class="fa-solid fa-bolt text-lg md:w-6 md:text-center"></i>
+      <span class="text-[11px] mt-1 md:mt-0 md:ml-4 md:text-base font-semibold">連刷</span>
+    </a>
+
+    <a href="#add" data-page="add" class="nav-item add-nav-item flex flex-col items-center justify-center text-wabi-text-secondary w-full h-full md:flex-row md:justify-start md:items-center md:h-auto md:py-3 md:px-8 hover:bg-black/5">
+      <span class="add-nav-pill flex items-center justify-center w-11 h-11 rounded-2xl bg-wabi-accent text-white shadow-sm border border-transparent md:w-10 md:h-10 md:rounded-xl md:mr-4">
+        <i class="fa-solid fa-qrcode text-lg"></i>
+      </span>
+      <span class="text-[11px] mt-1 md:mt-0 md:text-base font-semibold">掃描/新增</span>
+    </a>
+
+    <a href="#completed" data-page="completed" class="nav-item completed-nav-item flex flex-col items-center justify-center text-wabi-text-secondary w-full h-full md:flex-row md:justify-start md:items-center md:h-auto md:py-3.5 md:px-8 hover:bg-black/5">
+      <i class="fa-solid fa-circle-check text-lg md:w-6 md:text-center"></i>
+      <span class="text-[11px] mt-1 md:mt-0 md:ml-4 md:text-base font-semibold">已使用</span>
+    </a>
+
+    <a href="#deleted" data-page="deleted" class="nav-item flex flex-col items-center justify-center text-wabi-text-secondary w-full h-full md:flex-row md:justify-start md:items-center md:h-auto md:py-3.5 md:px-8 hover:bg-black/5">
+      <i class="fa-solid fa-trash text-lg md:w-6 md:text-center"></i>
+      <span class="text-[11px] mt-1 md:mt-0 md:ml-4 md:text-base font-semibold">回收桶</span>
+    </a>
+
+    <a href="#summary" data-page="summary" class="nav-item flex flex-col items-center justify-center text-wabi-text-secondary w-full h-full md:flex-row md:justify-start md:items-center md:h-auto md:py-3.5 md:px-8 hover:bg-black/5">
+      <i class="fa-solid fa-chart-pie text-lg md:w-6 md:text-center"></i>
+      <span class="text-[11px] mt-1 md:mt-0 md:ml-4 md:text-base font-semibold">總覽</span>
+    </a>
+
+    <a href="#settings" data-page="settings" class="nav-item flex flex-col items-center justify-center text-wabi-text-secondary w-full h-full md:flex-row md:justify-start md:items-center md:h-auto md:py-3.5 md:px-8 hover:bg-black/5">
+      <i class="fa-solid fa-gear text-lg md:w-6 md:text-center"></i>
+      <span class="text-[11px] mt-1 md:mt-0 md:ml-4 md:text-base font-semibold">設定</span>
+    </a>
+
+    <div class="hidden md:flex mt-auto pb-4 pt-8 px-8 flex-col text-wabi-text-secondary text-xs opacity-80 cursor-default">
+      <span id="sidebar-version-info">歐米票夾 OmniTrunk v2.0.0</span>
+      <span class="mt-1">&copy; 2026 OmniPass Base × TaskTrunk Soul</span>
+    </div>
+  </nav>
+
+  <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 bg-wabi-primary text-white px-6 py-3 rounded-lg shadow-lg opacity-0 transition-all duration-300 z-50 pointer-events-none">
+    <span id="toast-message"></span>
+  </div>
+
+  <script type="module" src="/src/js/main.js"></script>
+</body>
+</html>
+

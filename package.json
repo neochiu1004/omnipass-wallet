@@ -1,0 +1,30 @@
+{
+  "name": "omnipass-trunk-app",
+  "private": true,
+  "version": "2.0.0",
+  "description": "歐米票夾 OmniTrunk — 以 OmniPass (app.omnipass.tw) 為底、TaskTrunk 功能為靈魂的本地優先票券與條碼連刷 PWA。",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.7.2",
+    "@zxing/library": "^0.21.3",
+    "bwip-js": "^4.8.0",
+    "qrious": "^4.0.2"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.8.3",
+    "vite": "^8.0.16",
+    "vite-plugin-pwa": "^1.3.0"
+  }
+}
+
